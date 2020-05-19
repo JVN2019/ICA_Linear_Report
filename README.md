@@ -22,8 +22,6 @@ np.random.seed(42)
 
 The ICA is based on a generative model. This means that it assumes an underlying process that generates the observed data. The ICA model is simple, it assumes that some independent source signals *s* are linear combined by a mixing matrix A.
 
-![png](images/01.png)
-
 ### Import Dataset
 
 ```python
