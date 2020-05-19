@@ -27,7 +27,8 @@ The ICA is based on a generative model. This means that it assumes an underlying
 ### Import Dataset
 
 ```python
-R2, source2 = wavfile.read('beet9.wav')
+SR1, source1 = wavfile.read('beet.wav')
+SR2, source2 = wavfile.read('beet9.wav')
 SR3, source3 = wavfile.read('mike.wav')
 MSR1, mix_source1 = wavfile.read('mixing1.wav')
 MSR2, mix_source2 = wavfile.read('mixing2.wav')
