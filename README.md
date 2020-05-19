@@ -86,7 +86,7 @@ print(X_white)
 Now it is time to look at the actual ICA algorithm. As discussed above one precondition for the ICA algorithm to work is that the source signals are non-Gaussian. Therefore the result of the ICA should return sources that are as non-Gaussian as possible. To achieve this we need a measure of Gaussianity. One way is Kurtosis and it could be used here but another way has proven more efficient. Nevertheless we will have a look at kurtosis at the end of this notebook.
 For the actual algorithm however we will use the equations g and g'.
 ```math
-\begin{equation}g(w^TX)=\tanh \left(W^T X\right)\space\space g'(W^TX)=1-\tanh^2 \left(W^T X\right)\end{equation}
+$g_{1}(y)=\tanh \left(a_{1} u\right)$
 ```
 ```python
 #Define g and g' function.
