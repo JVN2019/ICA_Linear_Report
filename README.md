@@ -2,9 +2,7 @@
 
 # Independent Component Analysis (ICA) implementation from scratch in Python
 
-This is the Python Jupyter Notebook for the [Medium article about implementing the fast Independent Component Analysis (ICA) algorithm](https://medium.com/@CarstenKlein/separating-mixed-signals-with-independent-component-analysis-38205188f2f4).
-
-ICA is an efficient technique to decompose linear mixtures of signals into their underlying independent components. Classical examples of where this method is used are noise reduction in images, artifact removal from time series data or identification of driving components in financial data.
+ICA is an efficient technique to decompose linear mixtures of signals into their underlying independent components. In this notebook, I will use fastICA algorithm to seperate mixing audio to original source audio.
 
 Here we will start by first importing the necessary libraries and creating some toy signals which we will use to develop and test our ICA implementation.
 
