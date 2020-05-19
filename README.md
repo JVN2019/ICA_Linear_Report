@@ -8,12 +8,13 @@ Here we will start by first importing the necessary libraries and creating some 
 
 
 ```python
-import pandas as pd
 import numpy as np
-from scipy import signal
+import pandas as pd
+import math
 import matplotlib.pyplot as plt
-
-# Enable plots inside the Jupyter NotebookLet the
+from scipy.io import wavfile
+from scipy import signal
+np.random.seed(42)
 %matplotlib inline
 ```
 
@@ -23,17 +24,30 @@ The ICA is based on a generative model. This means that it assumes an underlying
 
 ![png](images/01.png)
 
-### Retrieving the components
+### Import Dataset
 
-The above equations implies that if we invert *A* and multiply it with the observed signals x we will retrieve our sources:
+```python
+R2, source2 = wavfile.read('beet9.wav')
+SR3, source3 = wavfile.read('mike.wav')
+MSR1, mix_source1 = wavfile.read('mixing1.wav')
+MSR2, mix_source2 = wavfile.read('mixing2.wav')
+MSR3, mix_source3 = wavfile.read('mixing3.wav')
+n_samples=mix_source1.shape[0]
+noise1 = 1.5*np.random.normal(loc=0.0,scale=1000, size=n_samples)
+noise2 = 0.7*np.random.normal(loc=0.0, size=n_samples)
+noise3 = 2.1*np.random.normal(loc=0.0, size=n_samples)
+Source=np.asarray([source1,source2,source3])
+X_=np.asarray([mix_source1+noise1,mix_source2,mix_source3])
 
-![png](images/02.png)
-
-
-![png](images/03.png)
-
-This means that what our ICA algorithm needs to estimate is *W*.
-
+fig, ax = plt.subplots(2, 1, figsize=[18, 5], sharex=True)
+for i in range(len(Source)):
+    ax[0].plot(Source[i])
+ax[1].plot(X_[0])
+ax[0].set_title('Original Source', fontsize=25)
+ax[0].tick_params(labelsize=12)
+ax[1].set_xlabel('Sample number', fontsize=20)
+plt.show()
+```
 
 ## Preprocessing functions
 
@@ -43,104 +57,83 @@ The first pre-processing step we will discuss here is **centering**. This is a s
 
 
 ```python
-def center(x):
-    mean = np.mean(x, axis=1, keepdims=True)
-    centered =  x - mean
-    return centered, mean
+# Centering Data
+def center(X):
+    center=np.mean(X,axis=1,keepdims=True)
+    X_center=X-center
+    return X_center
+X_center=center(X_)
+print(X_center)
 ```
-
-For the second pre-processing technique we need to calculate the covariance. So lets quickly define it.
-
-
-```python
-def covariance(x):
-    mean = np.mean(x, axis=1, keepdims=True)
-    n = np.shape(x)[1] - 1
-    m = x - mean
-
-    return (m.dot(m.T))/n
-```
-
 The second pre-processing method is called **whitening**. The goal here is to linearly transform the observed signals X in a way that potential correlations between the signals are removed and their variances equal unity. As a result the covariance matrix of the whitened signals will be equal to the identity matrix
 
 
 ```python
-def whiten(x):
-    # Calculate the covariance matrix
-    coVarM = covariance(X)
-
-    # Single value decoposition
-    U, S, V = np.linalg.svd(coVarM)
-
-    # Calculate diagonal matrix of eigenvalues
-    d = np.diag(1.0 / np.sqrt(S))
-
-    # Calculate whitening matrix
-    whiteM = np.dot(U, np.dot(d, U.T))
-
-    # Project onto whitening matrix
-    Xw = np.dot(whiteM, X)
-
-    return Xw, whiteM
+def white(X):
+#Calculate covariance matrix of X
+    covariance=np.cov(X)
+#Calculate eigenvalue and eigenvector
+    d, E = np.linalg.eigh(covariance)
+    D = np.diag(d)
+#Whiten data
+    x_white=np.dot(E,np.dot(np.sqrt(np.linalg.inv(D)),np.dot(E.T,X)))
+    return x_white
+X_white=white(X_center)
+print(X_white)
 ```
 
 ## Implement the fast ICA algorithm
 
 Now it is time to look at the actual ICA algorithm. As discussed above one precondition for the ICA algorithm to work is that the source signals are non-Gaussian. Therefore the result of the ICA should return sources that are as non-Gaussian as possible. To achieve this we need a measure of Gaussianity. One way is Kurtosis and it could be used here but another way has proven more efficient. Nevertheless we will have a look at kurtosis at the end of this notebook.
 For the actual algorithm however we will use the equations g and g'.
+\begin{equation}g(w^TX)=\tanh \left(W^T X\right)\space\space g'(W^TX)=1-\tanh^2 \left(W^T X\right)\end{equation}
+```python
+#Define g and g' function.
+def g(X):
+    g_x=np.tanh(X)
+    return g_x
+def g_d(X):
+    g_d_x=1-(np.tanh(X))**2
+    return g_d_x
+```
+These equations allow an approximation of negentropy and will be used in the below ICA algorithm which is [based on a fixed-point iteration scheme]:
 
-![png](images/07.png)
 
-These equations allow an approximation of negentropy and will be used in the below ICA algorithm which is [based on a fixed-point iteration scheme](https://homepage.math.uiowa.edu/~whan/072.d/S3-4.pdf):
-
-![png](images/08.png)
 
 
 So according to the above what we have to do is to take a random guess for the weights of each component. The dot product of the random weights and the mixed signals is passed into the two functions g and g'. We then subtract the result of g' from g and calculate the mean. The result is our new weights vector. Next we could directly divide the new weights vector by its norm and repeat the above until the weights do not change anymore. There would be nothing wrong with that. However the problem we are facing here is that in the iteration for the second component we might identify the same component as in the first iteration. To solve this problem we have to decorrelate the new weights from the previously identified weights. This is what is happening in the step between updating the weights and dividing by their norm.
 
 
 ```python
-def fastIca(signals,  alpha = 1, thresh=1e-8, iterations=5000):
-    m, n = signals.shape
+def Fastica(X, iterations,n_components=-1, tolerance=1e-5):
+    if n_components < 1 :
+        n_components = X.shape[0]
+#Create random intial value for w
+    W = np.zeros((n_components, n_components), dtype=X.dtype)
 
-    # Initialize random weights
-    W = np.random.rand(m, m)
-
-    for c in range(m):
-            w = W[c, :].copy().reshape(m, 1)
-            w = w / np.sqrt((w ** 2).sum())
-
-            i = 0
-            lim = 100
-            while ((lim > thresh) & (i < iterations)):
-
-                # Dot product of weight and signal
-                ws = np.dot(w.T, signals)
-
-                # Pass w*s into contrast function g
-                wg = np.tanh(ws * alpha).T
-
-                # Pass w*s into g prime
-                wg_ = (1 - np.square(np.tanh(ws))) * alpha
-
-                # Update weights
-                wNew = (signals * wg.T).mean(axis=1) - wg_.mean() * w.squeeze()
-
-                # Decorrelate weights              
-                wNew = wNew - np.dot(np.dot(wNew, W[:c].T), W[:c])
-                wNew = wNew / np.sqrt((wNew ** 2).sum())
-
-                # Calculate limit condition
-                lim = np.abs(np.abs((wNew * w).sum()) - 1)
-
-                # Update weights
-                w = wNew
-
-                # Update counter
-                i += 1
-
-            W[c, :] = w.T
-    return W
+    for i in range(n_components):
+        
+        w = np.random.rand(n_components)
+#Calculate and update new value for w        
+        for j in range(iterations):
+            
+            w_new = new_w(w, X)
+#Decorrelate output when use fastICA for many units.            
+            if i > 1:
+                w_new -= np.dot(np.dot(w_new, W[:i].T), W[:i])
+#Check conrvege            
+            distance = np.abs(np.abs((w * w_new).sum()) - 1)
+            
+            w = w_new
+            
+            if distance < tolerance:
+                break
+                
+        W[i, :] = w
+#Calculate ICs       
+    S = np.dot(W, X)
+    
+    return S
 ```
 
 ### Pre-processing
@@ -219,54 +212,3 @@ plt.show()
 
 
 The result of the ICA are plotted above, and the result looks very good. We got all three sources back!
-
-## Kurtosis
-
-So finally lets check one last thing: The kurtosis of the signals.
-Kurtosis is the fourth moment of the data and measures the "tailedness" of a distribution. A normal distribution has a value of 3, a uniform distribution like the one we used in our toy data has a kurtosis < 3. The implementation in Python is straight forward as can be seen from the code below which also calculates the other moments of the data. The first moment is the mean, the second is the variance, the third is the skewness and the fourth is the kurtosis. Here 3 is subtracted from the fourth moment so that a normal distribution has a kurtosis of 0.
-
-
-```python
-# Calculate Kurtosis
-
-def kurt(x):
-    n = np.shape(x)[0]
-    mean = np.sum((x**1)/n) # Calculate the mean
-    var = np.sum((x-mean)**2)/n # Calculate the variance
-    skew = np.sum((x-mean)**3)/n # Calculate the skewness
-    kurt = np.sum((x-mean)**4)/n # Calculate the kurtosis
-    kurt = kurt/(var**2)-3
-
-    return kurt, skew, var, mean
-```
-
-As we can see in the following all of our mixed signals have a kurtosis of ≤ 1 whereas all recovered independent components have a kurtosis of 1.5 which means they are less Gaussian than their sources. This has to be the case since the ICA tries to maximize non-Gaussianity. Also it nicely illustrates the fact mentioned above that the mixture of non-Gaussian signals will be more Gaussian than the sources.
-
-
-```python
-import seaborn as sns
-
-fig, ax = plt.subplots(1, 1, figsize=(10,10))
-for i in range(X.shape[0]):
-
-    sns.kdeplot(X[i, :], lw=5, label='Mixed Kurtosis={}'.format(np.round(kurt(X[i, :])[0], decimals=1)))
-
-for i in range(X.shape[0]):   
-    sns.kdeplot(unMixed[i, :], lw=5, ls='--', label='unMixed Kurtosis={}'.format(np.around(kurt(unMixed[i, :])[0], decimals=1)))
-
-ax.tick_params(labelsize=12)
-ax.set_xlabel('value', fontsize=20)
-ax.set_ylabel('count', fontsize=20)
-ax.set_title('KDE plot of ', fontsize=25)
-plt.show()
-```
-
-
-![png](images/output_29_0.png)
-
-
-
-```python
-
-```
-
