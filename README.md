@@ -60,7 +60,7 @@ print(X_center)
 ```
 The second step is called **whitening**. The goal here is to linearly transform the observed signals X in a way that potential correlations between the signals are removed and their variances equal unity. As a result the covariance matrix of the whitened signals will be equal to the identity matrix. Whitening can be done by this formula:
 
-![png](Latex_Image/Whiten_formula.png)
+![Whiten_formula](https://user-images.githubusercontent.com/63275375/82413905-677e5980-9aa0-11ea-8c4f-3a55fa2ab584.PNG)
 
 ```python
 def white(X):
