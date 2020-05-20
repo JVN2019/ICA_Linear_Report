@@ -1,11 +1,11 @@
 # ICA_Report
 
 # Blind Source Seperation using Independent Component Analysis (ICA)
-In this experiment, we will focuses on the task of separating mixtures of sound signals into their underlying independent components using the technique of independent component analysis (ICA). Cụ thể, chúng tối sẽ phân tách 3 hỗn hợp âm thanh được tạo từ 3 nguồn phát là tiếng nói người và tiếng nhạc hòa tấu bằng cách áp dụng thuật toán fastICA. To denote these mathematically, consider x is mixed signal, S is the matrix of source signals and A is mixing matrix. We have:
+In this experiment, we will focuses on the task of separating mixtures of sound signals into their underlying independent components using the technique of independent component analysis (ICA). Specifically, we will separate 3 audio mixes from 3 sources which are human voices and music by applying the fast-ICA algorithm. To denote these mathematically, consider x is mixed-audios, S is the source signals and A is mixing matrix. We have:
 
 ![x_formula](https://user-images.githubusercontent.com/63275375/82419666-e8d9ea00-9aa8-11ea-9236-c99af2a9bfc5.PNG)
 
-Call W is inverse matrix of A. We will use fastICA algorithm to estimate W and use this formula to find S:
+Let W is inverse matrix of A. We will use fastICA algorithm to estimate W and use this formula to find S:
 
 ![S_formula](https://user-images.githubusercontent.com/63275375/82419664-e8d9ea00-9aa8-11ea-902c-b8c5bc41d157.PNG)
 
@@ -65,8 +65,9 @@ The basic form of the fast-ICA algorithm as follows:
 
 ![FastICA_form](https://user-images.githubusercontent.com/63275375/82431091-68bb8080-9ab8-11ea-9a3b-bb6b676abeae.PNG)
 
-So according to the above what we have to do is to take a random guess for the weights of each component. The dot product of the random weights and the mixed signals is passed into the two functions g and g'. We then subtract the result of g' from g and calculate the mean. The result is our new weights vector. Next we could directly divide the new weights vector by its norm and repeat the above until the weights do not change anymore. There would be nothing wrong with that. However the problem we are facing here is that in the iteration for the second component we might identify the same component as in the first iteration. To solve this problem we have to decorrelate the new weights from the previously identified weights. This is what is happening in the step between updating the weights and dividing by their norm.
+In our experiment, we have more than 1 independent component so we have to decorrelate the output after each iterations. To achieve this, we use a deflation scheme based on a Gram–Schmidt-like decorrelation. We will estimate the independent component one by one and decorrelate output as follows:
 
+![decorrlation](https://user-images.githubusercontent.com/63275375/82432144-d1572d00-9ab9-11ea-9fc6-ac4f1301f07e.PNG)
 
 ```python
 def Fastica(X, iterations,n_components=-1, tolerance=1e-5):
@@ -99,80 +100,12 @@ def Fastica(X, iterations,n_components=-1, tolerance=1e-5):
     
     return S
 ```
-
-### Pre-processing
-
-So... before we run the ICA we need to do the pre-processing.
-
-
+Now, all formulas are define, we will input the dataset and get the result.
 ```python
-# Center signals
-Xc, meanX = center(X)
-
-# Whiten mixed signals
-Xw, whiteM = whiten(Xc)
+X_center=center(X)
+X_white=whiten(X_center)
+Estimate_S=Fastica(X_white,n_components=3,iterations=1000)
 ```
+![Audio result](https://user-images.githubusercontent.com/63275375/82433062-1891ed80-9abb-11ea-8f32-523b337283f2.png)
 
-### Check whitening
-
-Above we mentioned that the covariance matrix of the whitened signal should equal the identity matrix:
-
-![png](images/05.png)
-
-...and as we can see below this is correct.
-
-
-```python
-# Check if covariance of whitened matrix equals identity matrix
-print(np.round(covariance(Xw)))
-```
-
-    [[ 1. -0.  0.]
-     [-0.  1.  0.]
-     [ 0.  0.  1.]]
-
-
-### Running the ICA
-
-Finally... it is time to feed the whitened signals into the ICA algorithm.
-
-
-```python
-W = fastIca(Xw,  alpha=1)
-
-#Un-mix signals using
-unMixed = Xw.T.dot(W.T)
-
-# Subtract mean
-unMixed = (unMixed.T - meanX).T
-```
-
-
-```python
-# Plot input signals (not mixed)
-fig, ax = plt.subplots(1, 1, figsize=[18, 5])
-ax.plot(S, lw=5)
-ax.tick_params(labelsize=12)
-ax.set_xticks([])
-ax.set_yticks([-1, 1])
-ax.set_title('Source signals', fontsize=25)
-ax.set_xlim(0, 100)
-
-fig, ax = plt.subplots(1, 1, figsize=[18, 5])
-ax.plot(unMixed, '--', label='Recovered signals', lw=5)
-ax.set_xlabel('Sample number', fontsize=20)
-ax.set_title('Recovered signals', fontsize=25)
-ax.set_xlim(0, 100)
-
-plt.show()
-```
-
-
-![png](images/output_24_0.png)
-
-
-
-![png](images/output_24_1.png)
-
-
-The result of the ICA are plotted above, and the result looks very good. We got all three sources back!
+The result looks very good, we get back all 3 sources.
