@@ -106,6 +106,6 @@ X_center=center(X)
 X_white=whiten(X_center)
 Estimate_S=Fastica(X_white,n_components=3,iterations=1000)
 ```
-![Audio result](https://user-images.githubusercontent.com/63275375/82433062-1891ed80-9abb-11ea-8f32-523b337283f2.png)
+![Audio result](https://user-images.githubusercontent.com/63275375/82446033-14bc9600-9ad0-11ea-8811-b0b294b087da.png)
 
 The result looks very good, we get back all 3 sources.
