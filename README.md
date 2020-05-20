@@ -110,4 +110,4 @@ Estimate_S=Fastica(X_white,n_components=3,iterations=1000)
 ```
 ![Audio result](https://user-images.githubusercontent.com/63275375/82446033-14bc9600-9ad0-11ea-8811-b0b294b087da.png)
 
-The result looks very good, we get back all 3 sources.
+We have collected good result. We got back 3 audio components with the same waveform as the original source and the output file sounds clear.
