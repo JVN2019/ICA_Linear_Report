@@ -59,8 +59,8 @@ X_center=center(X_)
 print(X_center)
 ```
 The second step is called **whitening**. The goal here is to linearly transform the observed signals X in a way that potential correlations between the signals are removed and their variances equal unity. As a result the covariance matrix of the whitened signals will be equal to the identity matrix. Whitening can be done by this formula:
-\\
-![png](images/03.png)
+
+![png](ICA_Linear_Report/Latex_Image/Whiten_formula.png)
 
 ```python
 def white(X):
