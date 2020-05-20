@@ -1,7 +1,7 @@
 # ICA_Report
 
 # Blind Source Seperation using Independent Component Analysis (ICA)
-In this report, we will construct an experiment focuses on the task of separating mixtures of sound signals into their underlying independent components using the technique of independent component analysis (ICA). Specifically, we will separate 3 audio mixes from 3 sources which are human voices and music by applying the fast-ICA algorithm. Let x is mixed-audios, S is the source signals and A is mixing matrix. We have the mixing model is:
+In this report, we will construct an experiment focusing on the task of separating mixtures of sound signals into their underlying independent components using the technique of independent component analysis (ICA). Specifically, we will separate 3 audio mixes from 3 sources which are human voices and music by applying the fast-ICA algorithm. Let x is mixed-audios, S is the source signals and A is mixing matrix. We have the mixing model is:
 
 ![x_formula](https://user-images.githubusercontent.com/63275375/82419666-e8d9ea00-9aa8-11ea-9236-c99af2a9bfc5.PNG)
 
@@ -11,7 +11,9 @@ Let W is inverse matrix of A. We will use fastICA algorithm to estimate W and us
 
 
 ## Preprocessing data
-Before apply fast ICA algorithm to estimate W, we first preprocessing our data. Pre-processing data in ICA is an important step, It will help you make the problem of ICA estimation simpler and better conditioned. There are two important pre-processing steps:
+Before applying fast ICA algorithm to estimate W, we first preprocess our data. Pre-processing data in ICA is an important step, It will help you make the problem of ICA estimation simpler and better conditioned. 
+There are two important pre-processing steps:
+
 The first is **centering**. This is a simple subtraction of the mean from our input X. As a result, the centered mixed signals will have zero mean which implies that also our source signals s are of zero mean. This step will simplify the ICA calculation.
 
 ```python
@@ -23,7 +25,7 @@ def center(X):
 X_center=center(X_)
 print(X_center)
 ```
-The second step is called **whitening**. The goal here is to linearly transform the observed signals X in a way that potential correlations between the signals are removed and their variances equal unity. As a result, the covariance matrix of the whitened signals will be equal to the identity matrix. Whitening can be done by this formula:
+The second step is called **whitening**. The goal here is to linearly transform the observed signals X in a way that potential correlations among the signals are removed and their variances equal unity. As a result, the covariance matrix of the whitened signals will be equaled to the identity matrix. Whitening can be done by this formula:
 
 ![Whiten_formula](https://user-images.githubusercontent.com/63275375/82413905-677e5980-9aa0-11ea-8c4f-3a55fa2ab584.PNG)
 
