@@ -50,7 +50,7 @@ print(np.round(np.cov(X_white)))
 print(np.round(np.mean(X_white)))
 ```
 ## Implement the fast ICA algorithm
-After data is pre-preprocessed, it is time to look at the fastICA algorithm. As discussed above, one precondition for the ICA algorithm to work is that the source signals are non-Gaussian. Therefore, the result of the ICA should return sources that are as non-Gaussian as possible. In this experiment, we will choose negentropy as a measure of Gaussianity and the equation g, g' as follow :
+After the data is pre-preprocessed, it is time to look at the fastICA algorithm. As discussed above, one precondition for the ICA algorithm to work is that the source signals are non-Gaussian. Therefore, the result of the ICA should return sources that are as non-Gaussian as possible. In this experiment, we will choose negentropy as a measure of Gaussianity and the equation g, g' as follow :
 
 ![g_formula](https://user-images.githubusercontent.com/63275375/82419656-e7102680-9aa8-11ea-8bfa-948be188ab36.PNG)
 
