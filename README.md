@@ -1,7 +1,7 @@
 # ICA_Report
 
 # Blind Source Seperation using Independent Component Analysis (ICA)
-In this report, we will construct an experiment focusing on the task of separating mixtures of sound signals into their underlying independent components using the technique of independent component analysis (ICA). Specifically, we will separate 3 audio mixes from 3 sources which are human voices and music by applying the fast-ICA algorithm. Let x is mixed-audios, S is the source signals and A is mixing matrix. We have the mixing model is:
+In this report, we will construct an experiment focusing on the task of separating mixtures of sound signals into their underlying independent components using the technique of independent component analysis (ICA). Specifically,we will separate 3 audio files mixed from 3 original sources which are human voice and instrumental musics by applying the fast-ICA algorithm. Let x is mixed-audios, S is the source signals and A is mixing matrix. We have the mixing model is:
 
 ![x_formula](https://user-images.githubusercontent.com/63275375/82419666-e8d9ea00-9aa8-11ea-9236-c99af2a9bfc5.PNG)
 
