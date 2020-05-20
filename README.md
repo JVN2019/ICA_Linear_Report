@@ -12,7 +12,7 @@ Let W is inverse matrix of A. We will use fastICA algorithm to estimate W and us
 
 ## Preprocessing data
 Before apply fast ICA algorithm to estimate W, we first preprocessing our data. Pre-processing data in ICA is an important step, It will help you make the problem of ICA estimation simpler and better conditioned. There are two important pre-processing steps:
-The first is **centering**. This is a simple subtraction of the mean from our input X. As a result the centered mixed signals will have zero mean which implies that also our source signals s are of zero mean. This step will simplify the ICA calculation.
+The first is **centering**. This is a simple subtraction of the mean from our input X. As a result, the centered mixed signals will have zero mean which implies that also our source signals s are of zero mean. This step will simplify the ICA calculation.
 
 ```python
 # Centering Data
@@ -23,7 +23,7 @@ def center(X):
 X_center=center(X_)
 print(X_center)
 ```
-The second step is called **whitening**. The goal here is to linearly transform the observed signals X in a way that potential correlations between the signals are removed and their variances equal unity. As a result the covariance matrix of the whitened signals will be equal to the identity matrix. Whitening can be done by this formula:
+The second step is called **whitening**. The goal here is to linearly transform the observed signals X in a way that potential correlations between the signals are removed and their variances equal unity. As a result, the covariance matrix of the whitened signals will be equal to the identity matrix. Whitening can be done by this formula:
 
 ![Whiten_formula](https://user-images.githubusercontent.com/63275375/82413905-677e5980-9aa0-11ea-8c4f-3a55fa2ab584.PNG)
 
@@ -48,7 +48,7 @@ print(np.round(np.cov(X_white)))
 print(np.round(np.mean(X_white)))
 ```
 ## Implement the fast ICA algorithm
-After data is pre-preprocessed, it is time to look at the fastICA algorithm. As discussed above one precondition for the ICA algorithm to work is that the source signals are non-Gaussian. Therefore, the result of the ICA should return sources that are as non-Gaussian as possible. In this experiment, we will choose negentropy as a measure of Gaussianity and the equation g, g' as follow :
+After data is pre-preprocessed, it is time to look at the fastICA algorithm. As discussed above, one precondition for the ICA algorithm to work is that the source signals are non-Gaussian. Therefore, the result of the ICA should return sources that are as non-Gaussian as possible. In this experiment, we will choose negentropy as a measure of Gaussianity and the equation g, g' as follow :
 
 ![g_formula](https://user-images.githubusercontent.com/63275375/82419656-e7102680-9aa8-11ea-8bfa-948be188ab36.PNG)
 
@@ -65,7 +65,7 @@ The basic form of the fast-ICA algorithm as follows:
 
 ![FastICA_form](https://user-images.githubusercontent.com/63275375/82431091-68bb8080-9ab8-11ea-9a3b-bb6b676abeae.PNG)
 
-In our experiment, we have more than 1 independent component so we have to decorrelate the output after each iterations. To achieve this, we use a deflation scheme based on a Gram–Schmidt-like decorrelation. We will estimate the independent component one by one and decorrelate output as follows:
+In our experiment, we have more than 1 independent component ,so we have to decorrelate the output after each iterations. To achieve this, we use a deflation scheme based on a Gram–Schmidt-like decorrelation. We will estimate the independent component one by one and decorrelate output as follows:
 
 ![decorrlation](https://user-images.githubusercontent.com/63275375/82432144-d1572d00-9ab9-11ea-9fc6-ac4f1301f07e.PNG)
 
