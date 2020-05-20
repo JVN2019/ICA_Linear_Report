@@ -1,7 +1,8 @@
-# ICA_MrSon
+# ICA_Report
 
-# Independent Component Analysis (ICA) implementation from scratch in Python
-
+# Independent Component Analysis (ICA) implementation for blind source separation.
+This experiment focuses on the task of separating a mixture of independent (non-gaussian) sound signals using the technique of independent component analysis (ICA). The idea of blind source separation (BSS) is to determine the original signals given the linear mixtures. In ICA, one assumes that the mixtures and the sources are random variables (with zero mean) instead of proper time signals. This allows the final mixed signals to be considered as samples of these random variables. To denote these mathematically, consider s to be the matrix of source signals (where each row consists of the samples of the source); let the matrix A be the mixing matrix, which produces the mixed signals x by applying a linear transformation on the sources. We have that:
+The ICA is based on a generative model. This means that it assumes an underlying process that generates the observed data. The ICA model is simple, it assumes that some independent source signals *s* are linear combined by a mixing matrix A.
 ICA is an efficient technique to decompose linear mixtures of signals into their underlying independent components. In this notebook, I will use fastICA algorithm to seperate mixing audio to original source audio.
 
 Here we will start by first importing the necessary libraries and creating some toy signals which we will use to develop and test our ICA implementation.
@@ -17,11 +18,7 @@ from scipy import signal
 np.random.seed(42)
 %matplotlib inline
 ```
-
-### The generative model of ICA
-
-The ICA is based on a generative model. This means that it assumes an underlying process that generates the observed data. The ICA model is simple, it assumes that some independent source signals *s* are linear combined by a mixing matrix A.
-
+The basic developmental algorithm was first tested on a simple data set consisting of 3 sound sources with 40 samples for each source. The primary data for the main experiments consisted of 5 sound source samples, each approximately 4 seconds in length and sampled at the rate 11025 samples per second. The mixing matrix A was created by choosing random elements in the range (0 − 0:1). The experiment was first conducted by considering all 3 source combinations (i.e. 5 3source combinations), to compare which source combinations were easy (equivalently hard) to separate. Correlation co-efficient was used to compare the goodness of recovery. The recovered signals were also plotted for visual comparison of the results.
 ### Import Dataset
 
 ```python
