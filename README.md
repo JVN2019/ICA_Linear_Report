@@ -1,50 +1,17 @@
 # ICA_Report
 
 # Blind Source Seperation using Independent Component Analysis (ICA)
-In this report, we will focuses on the task of separating mixtures of sound signals into their underlying independent components using the technique of independent component analysis (ICA). Cụ thể, chúng tối sẽ phân tách 3 hỗn hợp âm thanh được tạo từ 3 nguồn phát là tiếng nói người và tiếng nhạc hòa tấu bằng cách áp dụng thuật toán fastICA. To denote these mathematically, consider x is mixed signal, S is the matrix of source signals and A is mixing matrix. We have:
+In this experiment, we will focuses on the task of separating mixtures of sound signals into their underlying independent components using the technique of independent component analysis (ICA). Cụ thể, chúng tối sẽ phân tách 3 hỗn hợp âm thanh được tạo từ 3 nguồn phát là tiếng nói người và tiếng nhạc hòa tấu bằng cách áp dụng thuật toán fastICA. To denote these mathematically, consider x is mixed signal, S is the matrix of source signals and A is mixing matrix. We have:
+
 ![x_formula](https://user-images.githubusercontent.com/63275375/82419666-e8d9ea00-9aa8-11ea-9236-c99af2a9bfc5.PNG)
+
 Call W is inverse matrix of A. We will use fastICA algorithm to estimate W and use this formula to find S:
+
 ![S_formula](https://user-images.githubusercontent.com/63275375/82419664-e8d9ea00-9aa8-11ea-902c-b8c5bc41d157.PNG)
 
-```python
-import numpy as np
-import pandas as pd
-import math
-import matplotlib.pyplot as plt
-from scipy.io import wavfile
-from scipy import signal
-np.random.seed(42)
-%matplotlib inline
-```
-### Import Dataset
-
-```python
-SR1, source1 = wavfile.read('beet.wav')
-SR2, source2 = wavfile.read('beet9.wav')
-SR3, source3 = wavfile.read('mike.wav')
-MSR1, mix_source1 = wavfile.read('mixing1.wav')
-MSR2, mix_source2 = wavfile.read('mixing2.wav')
-MSR3, mix_source3 = wavfile.read('mixing3.wav')
-n_samples=mix_source1.shape[0]
-noise1 = 1.5*np.random.normal(loc=0.0,scale=1000, size=n_samples)
-noise2 = 0.7*np.random.normal(loc=0.0, size=n_samples)
-noise3 = 2.1*np.random.normal(loc=0.0, size=n_samples)
-Source=np.asarray([source1,source2,source3])
-X_=np.asarray([mix_source1+noise1,mix_source2,mix_source3])
-
-fig, ax = plt.subplots(2, 1, figsize=[18, 5], sharex=True)
-for i in range(len(Source)):
-    ax[0].plot(Source[i])
-ax[1].plot(X_[0])
-ax[0].set_title('Original Source', fontsize=25)
-ax[0].tick_params(labelsize=12)
-ax[1].set_xlabel('Sample number', fontsize=20)
-plt.show()
-```
 
 ## Preprocessing data
-
-Pre-processing data in ICA is an important step, It will help you make the problem of ICA estimation simpler and better conditioned. There are two important pre-processing steps:
+Before apply fast ICA algorithm to estimate W, we first preprocessing our data. Pre-processing data in ICA is an important step, It will help you make the problem of ICA estimation simpler and better conditioned. There are two important pre-processing steps:
 The first is **centering**. This is a simple subtraction of the mean from our input X. As a result the centered mixed signals will have zero mean which implies that also our source signals s are of zero mean. This step will simplify the ICA calculation.
 
 ```python
@@ -81,11 +48,10 @@ print(np.round(np.cov(X_white)))
 print(np.round(np.mean(X_white)))
 ```
 ## Implement the fast ICA algorithm
-After data is pre-preprocessed, it is time to look at the fastICA algorithm. As discussed above one precondition for the ICA algorithm to work is that the source signals are non-Gaussian. Therefore the result of the ICA should return sources that are as non-Gaussian as possible. To achieve this we need a measure of Gaussianity.
-For the actual algorithm however we will use the equations g and g'.
-```math
-$g_{1}(y)=\tanh \left(a_{1} u\right)$
-```
+After data is pre-preprocessed, it is time to look at the fastICA algorithm. As discussed above one precondition for the ICA algorithm to work is that the source signals are non-Gaussian. Therefore, the result of the ICA should return sources that are as non-Gaussian as possible. In this experiment, we will choose negentropy as a measure of Gaussianity and the equation g, g' as follow :
+
+![g_formula](https://user-images.githubusercontent.com/63275375/82419656-e7102680-9aa8-11ea-8bfa-948be188ab36.PNG)
+
 ```python
 #Define g and g' function.
 def g(X):
@@ -95,10 +61,9 @@ def g_d(X):
     g_d_x=1-(np.tanh(X))**2
     return g_d_x
 ```
-These equations allow an approximation of negentropy and will be used in the below ICA algorithm which is [based on a fixed-point iteration scheme]:
+The basic form of the fast-ICA algorithm as follows:
 
-
-
+![FastICA_form](https://user-images.githubusercontent.com/63275375/82431091-68bb8080-9ab8-11ea-9a3b-bb6b676abeae.PNG)
 
 So according to the above what we have to do is to take a random guess for the weights of each component. The dot product of the random weights and the mixed signals is passed into the two functions g and g'. We then subtract the result of g' from g and calculate the mean. The result is our new weights vector. Next we could directly divide the new weights vector by its norm and repeat the above until the weights do not change anymore. There would be nothing wrong with that. However the problem we are facing here is that in the iteration for the second component we might identify the same component as in the first iteration. To solve this problem we have to decorrelate the new weights from the previously identified weights. This is what is happening in the step between updating the weights and dividing by their norm.
 
