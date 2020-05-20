@@ -100,7 +100,7 @@ def Fastica(X, iterations,n_components=-1, tolerance=1e-5):
     
     return S
 ```
-Now, all formulas are define, we will input the dataset and get the result.
+Now, all formulas are defined, we will input the dataset and get the result.
 ```python
 X_center=center(X)
 X_white=whiten(X_center)
