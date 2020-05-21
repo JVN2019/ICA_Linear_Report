@@ -22,15 +22,13 @@ def center(X):
     center=np.mean(X,axis=1,keepdims=True)
     X_center=X-center
     return X_center
-X_center=center(X_)
-print(X_center)
 ```
 The second step is called **whitening**. The goal here is to linearly transform the observed signals X in a way that potential correlations among the signals are removed and their variances equal unity. As a result, the covariance matrix of the whitened signals will be equaled to the identity matrix. Whitening can be done by this formula:
 
 ![Whiten_formula](https://user-images.githubusercontent.com/63275375/82413905-677e5980-9aa0-11ea-8c4f-3a55fa2ab584.PNG)
 
 ```python
-def white(X):
+def whiten(X):
 #Calculate covariance matrix of X
     covariance=np.cov(X)
 #Calculate eigenvalue and eigenvector
@@ -39,8 +37,6 @@ def white(X):
 #Whiten data
     x_white=np.dot(E,np.dot(np.sqrt(np.linalg.inv(D)),np.dot(E.T,X)))
     return x_white
-X_white=white(X_center)
-print(X_white)
 ```
 Apply function to dataset and check the data after pre-preprocessing.
 ```python
